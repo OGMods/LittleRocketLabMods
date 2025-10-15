@@ -1,0 +1,12 @@
+<Project>
+  <!-- Import user-specific settings first so they can override defaults -->
+  <Import Project="Directory.Build.props.user" Condition="Exists('Directory.Build.props.user')" />
+
+  <PropertyGroup>
+    <!-- Default game installation path - can be overridden in Directory.Build.props.user -->
+    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Little Rocket Lab</GamePath>
+    <MelonLoaderPath>$(GamePath)\MelonLoader</MelonLoaderPath>
+    <MelonLoaderNet6Path>$(MelonLoaderPath)\net6</MelonLoaderNet6Path>
+    <Il2CppAssembliesPath>$(MelonLoaderPath)\Il2CppAssemblies</Il2CppAssembliesPath>
+  </PropertyGroup>
+</Project>

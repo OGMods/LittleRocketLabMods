@@ -1,0 +1,9 @@
+<Project>
+  <!--
+    Copy this file to Directory.Build.props.user and update the GamePath to match your installation.
+    Directory.Build.props.user is gitignored so your local path won't be committed.
+  -->
+  <PropertyGroup>
+    <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Little Rocket Lab</GamePath>
+  </PropertyGroup>
+</Project>
