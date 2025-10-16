@@ -2,7 +2,7 @@
 using HarmonyLib;
 using Il2Cpp;
 
-[assembly: MelonInfo(typeof(HigherStackSize.HigherStackSizeMod), "Higher Stack Size", "1.0.0", "OGMods")]
+[assembly: MelonInfo(typeof(HigherStackSize.HigherStackSizeMod), "Higher Stack Size", "1.0.1", "OGMods")]
 [assembly: MelonGame(null, null)]
 
 namespace HigherStackSize;
@@ -10,24 +10,24 @@ namespace HigherStackSize;
 public class HigherStackSizeMod : MelonMod
 {
     private const int NEW_STACK_SIZE = 999;
-    private static readonly HashSet<string> patchedItems = new();
 
     public override void OnInitializeMelon()
     {
         MelonLogger.Msg("Higher Stack Size loaded!");
+
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+    }
+
+    private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
+    {
+        MelonLogger.Error($"Unhandled Exception: {args.ExceptionObject}");
     }
 
     public static void PatchItem(InventoryItem item)
     {
-        if (item != null && item.HasQuantity && item.MaxStackSize != NEW_STACK_SIZE)
+        if (item != null && item.HasQuantity && item.MaxStackSize != NEW_STACK_SIZE && item.MaxStackSize > 1)
         {
             item.MaxStackSize = NEW_STACK_SIZE;
-
-            if (!patchedItems.Contains(item.Key))
-            {
-                patchedItems.Add(item.Key);
-                MelonLogger.Msg($"Patched {item.Key}: MaxStackSize = {NEW_STACK_SIZE}");
-            }
         }
     }
 }
@@ -76,25 +76,6 @@ public class InventorySlot_AddItem_Patch
     }
 }
 
-[HarmonyPatch(typeof(InventoryData), "Sort")]
-public class InventoryData_Sort_Patch
-{
-    [HarmonyPrefix]
-    public static void Prefix(InventoryData __instance)
-    {
-        if (__instance?._inventorySlots == null) return;
-
-        foreach (var slot in __instance._inventorySlots)
-        {
-            if (slot == null) continue;
-
-            HigherStackSizeMod.PatchItem(slot.Item);
-            HigherStackSizeMod.PatchItem(slot.LockedItem);
-            HigherStackSizeMod.PatchItem(slot.RequiredItem);
-        }
-    }
-}
-
 [HarmonyPatch(typeof(InventorySlot), "IsFull")]
 public class InventorySlot_IsFull_Patch
 {
@@ -131,12 +112,21 @@ public class InventorySlot_TestAddItem_Patch
     }
 }
 
-[HarmonyPatch(typeof(CachedAssetDatabase<InventoryItem>), "Get", new Type[] { typeof(string), typeof(bool) })]
-public class CachedAssetDatabase_Get_Patch
+[HarmonyPatch(typeof(InventoryData), "Sort")]
+public class InventoryData_Sort_Patch
 {
-    [HarmonyPostfix]
-    public static void Postfix(InventoryItem __result)
+    [HarmonyPrefix]
+    public static void Prefix(InventoryData __instance)
     {
-        HigherStackSizeMod.PatchItem(__result);
+        if (__instance?._inventorySlots == null) return;
+
+        foreach (var slot in __instance._inventorySlots)
+        {
+            if (slot == null) continue;
+
+            HigherStackSizeMod.PatchItem(slot.Item);
+            HigherStackSizeMod.PatchItem(slot.LockedItem);
+            HigherStackSizeMod.PatchItem(slot.RequiredItem);
+        }
     }
 }
