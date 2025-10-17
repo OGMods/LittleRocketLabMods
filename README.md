@@ -10,6 +10,11 @@ Increases the maximum stack size for all stackable items to 999.
 - Works with existing saves and new items
 - **Warning:** If you remove this mod, loading a save will reset all item quantities above the default stack size to the default maximum (e.g., items with 50+ will be reduced to the vanilla stack limit)
 
+### ScrollSplit
+Split item stacks easily using the mouse scroll wheel.
+- Scroll up on a stack to pick up items form hovered slot
+- Scroll down to place items into empty slots or matching stacks
+
 ### RunFaster
 Enables the run speed boost for faster player movement.
 - Lightweight mod with no debug console or extra features

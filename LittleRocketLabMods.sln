@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunFaster", "RunFaster\RunF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HigherStackSize", "HigherStackSize\HigherStackSize.csproj", "{71DF8F91-D76A-81F5-984E-902E2BC0615A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrollSplit", "ScrollSplit\ScrollSplit.csproj", "{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{71DF8F91-D76A-81F5-984E-902E2BC0615A}.Release|x64.Build.0 = Release|Any CPU
 		{71DF8F91-D76A-81F5-984E-902E2BC0615A}.Release|x86.ActiveCfg = Release|Any CPU
 		{71DF8F91-D76A-81F5-984E-902E2BC0615A}.Release|x86.Build.0 = Release|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Debug|x64.Build.0 = Debug|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Debug|x86.Build.0 = Debug|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Release|x64.ActiveCfg = Release|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Release|x64.Build.0 = Release|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Release|x86.ActiveCfg = Release|Any CPU
+		{D734B0DE-2E11-4F05-AAC6-88C1F19EDF1B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
