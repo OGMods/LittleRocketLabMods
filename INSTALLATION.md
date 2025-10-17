@@ -34,6 +34,7 @@ After running the game once with the mods installed, you can customize settings:
 4. Find the section for the mod you want to configure:
    - `[SaveAnyTime]` - Change the save hotkey
    - `[SpeedControl]` - Change speed control hotkeys
+   - `[HigherStackSize]` - Configure stack size behavior
 5. Edit the values as desired
 6. Save the file and launch the game
 
@@ -51,6 +52,16 @@ IncreaseKey = "KeypadPlus"
 DecreaseKey = "KeypadMinus"
 # Key to reset Speed Control to 1.0.
 ResetKey = "KeypadMultiply"
+
+[HigherStackSize]
+# WARNING: Lowering stack size or multiplier may cause losing items with existing save files that have larger stacks!
+WARNING = "Lowering stack size or multiplier may cause losing items with existing save files that have larger stacks!"
+# If true, multiply the original stack size. If false, set to a fixed value.
+UseMultiplier = false
+# The fixed maximum stack size for stackable items when UseMultiplier is false. Default is 999.
+StackSize = 999
+# Multiply the original stack size by this value when UseMultiplier is true. Default is 10x.
+Multiplier = 10.0
 ```
 
 ## Compatibility

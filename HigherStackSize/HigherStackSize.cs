@@ -2,18 +2,54 @@
 using HarmonyLib;
 using Il2Cpp;
 
-[assembly: MelonInfo(typeof(HigherStackSize.HigherStackSizeMod), "Higher Stack Size", "1.0.1", "OGMods")]
+[assembly: MelonInfo(typeof(HigherStackSize.HigherStackSizeMod), "Higher Stack Size", "1.1.0", "OGMods")]
 [assembly: MelonGame(null, null)]
 
 namespace HigherStackSize;
 
+/// <summary>
+/// Mod that increases the maximum stack size for stackable items.
+/// Supports both fixed stack size mode and multiplier mode.
+/// </summary>
 public class HigherStackSizeMod : MelonMod
 {
-    private const int NEW_STACK_SIZE = 999;
+    // Preference entries
+    private static MelonPreferences_Category prefsCategory;
+    private static MelonPreferences_Entry<bool> useMultiplierEntry;
+    private static MelonPreferences_Entry<int> stackSizeEntry;
+    private static MelonPreferences_Entry<float> multiplierEntry;
+
+    // Values to be used in patches
+    private static bool useMultiplier;
+    private static int newStackSize;
+    private static float multiplier;
+
+    // Track original stack sizes to prevent multiplying already-multiplied values
+    private static readonly Dictionary<string, int> originalStackSizes = new();
 
     public override void OnInitializeMelon()
     {
-        MelonLogger.Msg("Higher Stack Size loaded!");
+        // Set up preferences
+        prefsCategory = MelonPreferences.CreateCategory("HigherStackSize", "Higher Stack Size Settings");
+        prefsCategory.CreateEntry("WARNING", "Lowering stack size or multiplier may cause losing items with existing save files that have larger stacks!", "⚠️ Warning", "Read this warning before changing values!");
+        useMultiplierEntry = prefsCategory.CreateEntry("UseMultiplier", false, "Use Multiplier Mode", "If true, multiply the original stack size. If false, set to a fixed value.");
+        stackSizeEntry = prefsCategory.CreateEntry("StackSize", 999, "Fixed Stack Size", "The fixed maximum stack size for stackable items when UseMultiplier is false. Default is 999.");
+        multiplierEntry = prefsCategory.CreateEntry("Multiplier", 10f, "Stack Size Multiplier", "Multiply the original stack size by this value when UseMultiplier is true. Default is 10x.");
+        MelonPreferences.Save();
+
+        // Load the current settings
+        useMultiplier = useMultiplierEntry.Value;
+        newStackSize = stackSizeEntry.Value;
+        multiplier = multiplierEntry.Value;
+
+        if (useMultiplier)
+        {
+            MelonLogger.Msg($"Higher Stack Size loaded! Using multiplier mode: {multiplier}x original stack size.");
+        }
+        else
+        {
+            MelonLogger.Msg($"Higher Stack Size loaded! Using fixed mode: stack size set to {newStackSize}.");
+        }
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
     }
@@ -23,110 +59,45 @@ public class HigherStackSizeMod : MelonMod
         MelonLogger.Error($"Unhandled Exception: {args.ExceptionObject}");
     }
 
+    /// <summary>
+    /// Patches an inventory item to modify its maximum stack size based on configuration.
+    /// </summary>
+    /// <param name="item">The inventory item to patch</param>
     public static void PatchItem(InventoryItem item)
     {
-        if (item != null && item.HasQuantity && item.MaxStackSize != NEW_STACK_SIZE && item.MaxStackSize > 1)
+        // Validate item is eligible for patching
+        if (item == null || !item.HasQuantity || item.MaxStackSize <= 1)
+            return;
+
+        string itemKey = item.Key;
+        if (string.IsNullOrEmpty(itemKey))
+            return;
+
+        int targetStackSize;
+
+        if (useMultiplier)
         {
-            item.MaxStackSize = NEW_STACK_SIZE;
+            // Store original stack size on first encounter to prevent exponential growth
+            if (!originalStackSizes.ContainsKey(itemKey))
+            {
+                originalStackSizes[itemKey] = item.MaxStackSize;
+            }
+
+            int originalStackSize = originalStackSizes[itemKey];
+
+            // Calculate multiplied stack size from original value
+            targetStackSize = (int)(originalStackSize * multiplier);
         }
-    }
-}
-
-[HarmonyPatch(typeof(InventorySlot), "Load")]
-public class InventorySlot_Load_Patch
-{
-    [HarmonyPrefix]
-    public static void Prefix(InventorySlotSaveData saveData)
-    {
-        if (saveData == null || string.IsNullOrEmpty(saveData.Key)) return;
-
-        try
+        else
         {
-            var repository = GameManager.Repository;
-            if (repository?.Items == null) return;
-
-            var item = repository.Items.Get(saveData.Key, false);
-            HigherStackSizeMod.PatchItem(item);
+            // Use fixed stack size
+            targetStackSize = newStackSize;
         }
-        catch (System.Exception e)
+
+        // Apply the new stack size if it differs from current
+        if (item.MaxStackSize != targetStackSize)
         {
-            MelonLogger.Error($"Error in Load Prefix: {e.Message}");
-        }
-    }
-
-    [HarmonyPostfix]
-    public static void Postfix(InventorySlot __instance)
-    {
-        HigherStackSizeMod.PatchItem(__instance?.Item);
-        HigherStackSizeMod.PatchItem(__instance?.RequiredItem);
-        HigherStackSizeMod.PatchItem(__instance?.LockedItem);
-    }
-}
-
-[HarmonyPatch(typeof(InventorySlot), nameof(InventorySlot.AddItem))]
-public class InventorySlot_AddItem_Patch
-{
-    [HarmonyPrefix]
-    public static void Prefix(InventorySlot __instance, InventoryItem item)
-    {
-        HigherStackSizeMod.PatchItem(item);
-        HigherStackSizeMod.PatchItem(__instance?.Item);
-        HigherStackSizeMod.PatchItem(__instance?.RequiredItem);
-        HigherStackSizeMod.PatchItem(__instance?.LockedItem);
-    }
-}
-
-[HarmonyPatch(typeof(InventorySlot), "IsFull")]
-public class InventorySlot_IsFull_Patch
-{
-    [HarmonyPrefix]
-    public static void Prefix(InventorySlot __instance)
-    {
-        HigherStackSizeMod.PatchItem(__instance?.Item);
-    }
-}
-
-[HarmonyPatch(typeof(InventorySlot), nameof(InventorySlot.CanAddItem))]
-public class InventorySlot_CanAddItem_Patch
-{
-    [HarmonyPrefix]
-    public static void Prefix(InventorySlot __instance, InventoryItem item)
-    {
-        HigherStackSizeMod.PatchItem(item);
-        HigherStackSizeMod.PatchItem(__instance?.Item);
-        HigherStackSizeMod.PatchItem(__instance?.RequiredItem);
-        HigherStackSizeMod.PatchItem(__instance?.LockedItem);
-    }
-}
-
-[HarmonyPatch(typeof(InventorySlot), "TestAddItem")]
-public class InventorySlot_TestAddItem_Patch
-{
-    [HarmonyPrefix]
-    public static void Prefix(InventorySlot __instance, InventoryItem item)
-    {
-        HigherStackSizeMod.PatchItem(item);
-        HigherStackSizeMod.PatchItem(__instance?.Item);
-        HigherStackSizeMod.PatchItem(__instance?.RequiredItem);
-        HigherStackSizeMod.PatchItem(__instance?.LockedItem);
-    }
-}
-
-[HarmonyPatch(typeof(InventoryData), "Sort")]
-public class InventoryData_Sort_Patch
-{
-    [HarmonyPrefix]
-    public static void Prefix(InventoryData __instance)
-    {
-        if (__instance?._inventorySlots == null) return;
-
-        foreach (var slot in __instance._inventorySlots)
-        {
-            if (slot == null) continue;
-
-            HigherStackSizeMod.PatchItem(slot.Item);
-            HigherStackSizeMod.PatchItem(slot.LockedItem);
-            HigherStackSizeMod.PatchItem(slot.RequiredItem);
+            item.MaxStackSize = targetStackSize;
         }
     }
 }
